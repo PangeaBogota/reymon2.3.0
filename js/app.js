@@ -349,6 +349,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     $scope.Proceso.CantidadEnviada=0;
     $scope.Proceso.Total=0;
     //$('#myProgress').hide();
+    //$('#progreso').hide();
     $scope.roundProgressData = {
       label: 0,
       percentage: 0
@@ -357,7 +358,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     {
         if ($scope.Proceso.Total>0) 
         {
-            $('#myProgress').show();
+            $('#progreso').show();
             $scope.Proceso.Porcentaje= Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
             //$scope.roundProgressData.percentage =Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
             //var elem = document.getElementById("myBar"); 
@@ -400,8 +401,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             }
             return
         }
-        $scope.rotacionOff();
-        $scope.rotacionOn();
+        
         CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0",function(faltante){
             if (faltante.length==0) 
             {
@@ -422,6 +422,8 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         }
                         return;
                     }
+                    $scope.rotacionOff();
+                    $scope.rotacionOn();
                     if (elem.length>0) 
                     {
                         localStorage.removeItem('NUEVA_SINCRONIZACION');
@@ -449,7 +451,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $scope.Proceso.CantidadFaltante=0;
                         $scope.Proceso.CantidadEnviada=0;
                         $scope.Proceso.Total=0;
-                        //$('#myProgress').hide();
+                        $('#progreso').hide();
                         $scope.roundProgressData = {
                           label: 0,
                           percentage: 0
