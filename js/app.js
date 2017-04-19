@@ -349,7 +349,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     $scope.Proceso.CantidadEnviada=0;
     $scope.Proceso.Total=0;
     //$('#myProgress').hide();
-    //$('#progreso').hide();
+    $('#progreso').hide();
     $scope.roundProgressData = {
       label: 0,
       percentage: 0
