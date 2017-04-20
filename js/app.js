@@ -385,7 +385,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     { 
         $scope.sincronizacion=window.localStorage.getItem("TIPO_SINCRONIZACION");
         if ($scope.sincronizacion==null || $scope.sincronizacion==undefined || $scope.sincronizacion==NaN) {
-            $scope.sincronizacion='MANUAL';
+            $scope.sincronizacion='AUTOMATICA';
         }
         if ($scope.sincronizacion=='AUTOMATICA') {
             $scope.envioDataWeb('AUTOMATICA');    

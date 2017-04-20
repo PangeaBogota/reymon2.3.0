@@ -2,7 +2,7 @@ app_angular.controller("configController",['Conexion','$scope','$route',function
 	
 	$scope.sincronizacion=window.localStorage.getItem("TIPO_SINCRONIZACION")
 	if ($scope.sincronizacion==null || $scope.sincronizacion==undefined || $scope.sincronizacion==NaN) {
-		$scope.sincronizacion='MANUAL';
+		$scope.sincronizacion='AUTOMATICA';
 	}
 	$scope.$watch('sincronizacion',function(a,b){
 		//TIPO_SINCRONIZACION=$scope.sincronizacion;
