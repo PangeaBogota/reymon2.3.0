@@ -457,7 +457,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                           label: 0,
                           percentage: 0
                         }
-
                         if (tipo!="AUTOMATICA") 
                         {
                             if (URLactual.hash.includes('ingresados')) {
@@ -472,7 +471,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                                 window.location.reload();
                             }
                         }
-                        
                         return;
                     }
                     $scope.CalculoPorcentaje();
