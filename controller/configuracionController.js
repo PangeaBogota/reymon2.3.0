@@ -1,6 +1,5 @@
 app_angular.controller("configController",['Conexion','$scope','$route',function (Conexion,$scope,$route) {
-	
-	$scope.sincronizacion=window.localStorage.getItem("TIPO_SINCRONIZACION")
+	$scope.sincronizacion=window.localStorage.getItem("TIPO_SINCRONIZACION");
 	if ($scope.sincronizacion==null || $scope.sincronizacion==undefined || $scope.sincronizacion==NaN) {
 		$scope.sincronizacion='AUTOMATICA';
 	}
