@@ -2773,12 +2773,13 @@ app_angular.service('Factory', function ($webSql) {
         "estadoID": {
             "type": "integer",
             "null": "NULL"
+        },
+        "proceso": {
+            "type": "text",
+            "null": "NULL"
         }
 
     })
-
-
-
     db.select("create view if not exists  vw_items_precios "+
         " as  "+ 
         "select    "+

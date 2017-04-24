@@ -387,7 +387,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         if ($scope.sincronizacion==null || $scope.sincronizacion==undefined || $scope.sincronizacion==NaN) {
             $scope.sincronizacion='AUTOMATICA';
         }
-        debugger
         if ($scope.sincronizacion=='AUTOMATICA') {
             $scope.envioDataWeb('AUTOMATICA');    
         }
@@ -1531,7 +1530,8 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].itemExtGenID+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rowid_erp+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].stock+
-                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].EstadoID+"' "; 
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].EstadoID+
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].proceso+"' "; 
                             if (contador==499) {
                                 CRUD.Updatedynamic(stringSentencia)
                                 NewQuery=true;

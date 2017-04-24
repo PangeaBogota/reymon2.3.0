@@ -137,6 +137,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		}
 		$scope.ItemSeleccionado=true;
 		CRUD.select("select distinct  e.itemID,item.item_referencia,e.extencionDetalle1ID as talla,0 as cantidad,0  as multiplo,ext1_d.erp_descripcion_corta,sum(e.stock) as stock from erp_items_extenciones  e inner join erp_items item on item.rowid=e.itemID inner join  erp_item_extencion1_detalle ext1_d on ext1_d.rowid_erp=e.extencionDetalle1ID where e.itemID='"+$scope.Item.rowid_item+"'  group by e.itemID,item.item_referencia,e.extencionDetalle1ID,ext1_d.erp_descripcion_corta order by ext1_d.erp_descripcion_corta ",function(elem){
+			debugger
 			elem.Estado=1;
 			elem.Colores=[];
 			if ($scope.EditarItem.banderaEditar==true) {
@@ -2401,7 +2402,8 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].itemExtGenID+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rowid_erp+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].stock+
-                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].EstadoID+"' "; 
+                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].EstadoID+
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].proceso+"' "; 
                             if (contador==499) {
                                 CRUD.Updatedynamic(stringSentencia)
                                 NewQuery=true;
