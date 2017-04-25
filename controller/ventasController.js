@@ -2453,9 +2453,11 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
                 ULTIMA_EMPRESA_SINCRONIZADA=$scope.sessiondate.codigo_empresa;
             window.setTimeout(function(){
                 ProcesadoHiden();
-                //$route.reload();
-                $location.path('/ventas/pedidos_ingresados')
+                $scope.confimar.salir=true;
                 Mensajes('Sincronizado Con Exito','success','')
+                $route.reload();
+                //$location.path('/ventas/pedidos_ingresados')
+                
             },7000)
         },6000)
     }
