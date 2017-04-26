@@ -459,7 +459,9 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         if (tipo!="AUTOMATICA") 
                         {
                             if (URLactual.hash.includes('ingresados')) {
-                                window.location.reload();
+                                setTimeout(function(){
+                                    $route.reload();
+                                },1000)
                             }
                         }
                         if ($scope.nueva_sincronizacion=="1" && tipo=="AUTOMATICA") 
@@ -467,7 +469,10 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             localStorage.removeItem('NUEVA_SINCRONIZACION');
                             localStorage.setItem('NUEVA_SINCRONIZACION',0); 
                             if (URLactual.hash.includes('ingresados')) {
-                                window.location.reload();
+                                setTimeout(function(){
+                                    $route.reload();
+                                },1000)
+                                
                             }
                         }
                         return;
@@ -482,7 +487,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $http({
                           method: 'GET',
                           async: true,
-                          timeout:12000,
+                          timeout:14000,
                           url: 'http://demos.pedidosonline.co/Mobile/sync?usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
                           
                             }).then(
@@ -710,9 +715,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             }
         });
     }
-    //CRUD.Updatedynamic("update s_planos_pedidos set estado=0 ");
-    //CRUD.Updatedynamic("update t_pedidos set estado_sincronizacion=0,sincronizado='false' where rowid=10063");
-    //$scope.build();
     $scope.sincronizar=function(){
         $scope.errorAlerta.bandera=0;
         ProcesadoShow();   

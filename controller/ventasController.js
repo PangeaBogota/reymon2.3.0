@@ -92,7 +92,13 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		})
 		$scope.CargarItems();
 	}
+	debugger
+	CRUD.selectAllinOne("select distinct  *,'' as empaque,'' as observacion from vw_items_precios  where  erp_id_maestro='L42'  order by item_referencia1",function(elem)
+	{
+
+	})
 	$scope.CargarItems=function(){
+		debugger
 		$scope.ListaItems=[];
 		$scope.Consulta="";
 		if ($scope.Sucursal.centro_operacion=='001') {
@@ -1382,8 +1388,15 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			}
 			///
 			CRUD.selectAllinOne('select*from   t_pedidos_detalle where rowid_pedido="'+$scope.Pedido.rowid+'"',function(Detalles){
+				$scope.Consulta=true;
 				if (Detalles.length==0) {
 					$scope.CantidadTotalPedido=0;
+					$scope.Consulta=false;
+				}
+				if ($scope.Consulta==false) 
+				{
+					ProcesadoHiden();
+					return;
 				}
 				$scope.Detalles=Detalles;
 				var IDTallas='(';	
