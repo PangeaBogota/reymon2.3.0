@@ -92,13 +92,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		})
 		$scope.CargarItems();
 	}
-	debugger
-	CRUD.selectAllinOne("select distinct  *,'' as empaque,'' as observacion from vw_items_precios  where  erp_id_maestro='L42'  order by item_referencia1",function(elem)
-	{
-
-	})
 	$scope.CargarItems=function(){
-		debugger
 		$scope.ListaItems=[];
 		$scope.Consulta="";
 		if ($scope.Sucursal.centro_operacion=='001') {
@@ -875,7 +869,6 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 					}
 					IDElimintar=IDElimintar.substring(0,IDElimintar.length-1);
 					IDElimintar+=')';
-					debugger
 					CRUD.Updatedynamic("delete from t_pedidos_detalle_detalle where pedidodetalle in "+IDElimintar+" ")
 					CRUD.Updatedynamic("delete from t_pedidos_detalle where rowid_item='"+$scope.Item.rowid_item+"' and rowid_pedido='"+$scope.Pedido.rowid+"'")
 					
@@ -970,8 +963,8 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			})
 		})
 		setTimeout(function() {
-			$scope.ItemsPedidoAgregados();
 			ProcesadoHiden();	
+			$scope.ItemsPedidoAgregados();
 			$scope.Item=null;
 		}, 4000);
 		
