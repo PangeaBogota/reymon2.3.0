@@ -318,6 +318,11 @@ app_angular.service('Factory', function ($webSql) {
             "type": "INTEGER",
             "null": "NULL"
         }
+        ,
+        "rowid_sku": {
+            "type": "INTEGER",
+            "null": "NULL"
+        }
 
 
     })
@@ -382,6 +387,11 @@ app_angular.service('Factory', function ($webSql) {
             "null": "NULL"
         },
         "indicador": {
+            "type": "integer",
+            "null": "NULL"
+        }
+        ,
+        "rowid_sku": {
             "type": "integer",
             "null": "NULL"
         }

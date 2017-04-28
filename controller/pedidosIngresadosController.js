@@ -315,7 +315,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 			'tpdd.rowid as s_rowid,'+
 			'tpdd.pedidodetalle as s_rowid_detalle,'+
 			'tpdd.cantidad as s_cantidad,'+
-			'tpdd.itemExtension2Detalle as s_itemextencion2detalle '+
+			'tpdd.itemExtension2Detalle as s_itemextencion2detalle,tpdd.rowid_sku '+
 			' from t_pedidos t'+
 			' inner  join  t_pedidos_detalle tpd '+
 			' on tpd.rowid_pedido=t.rowid'+
@@ -394,7 +394,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					"','"+ped[i].s_rowid_detalle+
 					"','"+ped[i].s_cantidad+
 					"','"+ped[i].s_itemextencion2detalle+
-					"',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"' "; 
+					"',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"','"+ped[i].rowid_sku+"' "; 
 					if (contador==499) {
 						CRUD.Updatedynamic(stringSentencia)
 						NewQuery=true;

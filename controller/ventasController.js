@@ -945,7 +945,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 						}
 						stringSentencia+=  "  SELECT  "+
 						"null,'"+parseInt(Detalle.rowid)+
-						"','"+detalle.Colores[i].extencionDetalle2ID+"','"+detalle.Colores[i].cantidad+"',0,0,0,0,0,0 "; 
+						"','"+detalle.Colores[i].extencionDetalle2ID+"','"+detalle.Colores[i].cantidad+"',0,0,0,0,0,0,"+detalle.Colores[i].rowid_erp+""; 
 					}
 					if (contador==499) {
 						CRUD.Updatedynamic(stringSentencia)

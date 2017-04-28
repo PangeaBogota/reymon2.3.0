@@ -266,7 +266,7 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 type: 'get',
-                url: 'http://demos.pedidosonline.co/Mobile/Instalacion?step=2&username='+username+'&codigo_empresa=' + codigo_empresa+ '&entidad=' + STEP_SINCRONIZACION[i],
+                url: SERVIDOR_INSTALACION+'step=2&username='+username+'&codigo_empresa=' + codigo_empresa+ '&entidad=' + STEP_SINCRONIZACION[i],
                 timeout:OFFSET,
                 crossDomain: true,
                 async: false,

@@ -24,7 +24,6 @@
     <script type="text/javascript" src="cssjs/jquery-1.12.3.js"></script>
     <script type="text/javascript" src="cssjs/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/constantes.js"></script>
-
     <!-- Noty -->
     <script type="text/javascript" src="cssjs/noty/jquery.noty.js"></script>
     <script type="text/javascript" src="cssjs/noty/layouts/top.js"></script>
@@ -73,7 +72,7 @@
                 type: type,
                 theme: 'defaultTheme',
                 layout: layot,
-                timeout: 10000,
+                timeout: 5000,
                 modal: self.data('modal')
             });
             return false;
@@ -143,7 +142,7 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 type: 'get',
-                url: 'http://demos.pedidosonline.co/Mobile/Loginkey?username='+$("#username").val()+'&codigo_empresa='+$("#codigo_empresa").val()+'&pass='+$("#password").val(),
+                url: SERVIDOR_LOGIN+'username='+$("#username").val()+'&codigo_empresa='+$("#codigo_empresa").val()+'&pass='+$("#password").val(),
                 crossDomain: true,
                 //async: false,
                 success: function (data) {
