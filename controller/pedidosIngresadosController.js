@@ -326,6 +326,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 
 		$scope.queryBuild=$scope.queryBuild.replace('__REQUIRED',$scope.pedidoSeleccionado.rowid_pedido)
 		CRUD.selectAllinOne($scope.queryBuild,function(ped){
+			debugger
 				var rowidPedido=0;
 				var contador=0;
 				var  stringSentencia='';

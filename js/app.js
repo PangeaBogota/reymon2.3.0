@@ -185,7 +185,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         if ($scope.sincronizacion=='AUTOMATICA') {
             $scope.envioDataWeb('AUTOMATICA');    
         }
-    }, 4000);
+    }, 15000);
     $scope.envioDataWeb=function(tipo){
         
         $scope.usuario=$scope.sessiondate.nombre_usuario;
@@ -232,7 +232,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $scope.rotacionOff();
                         $scope.procesoEnvio=false;
                         CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
-                        CRUD.Updatedynamic("delete from s_planos_pedidos");
+                        CRUD.Updatedynamic("delete from s_planos_pedidos where  estado=1 ");
                         $scope.Proceso.Porcentaje=0;
                         $scope.Proceso.CantidadFaltante=0;
                         $scope.Proceso.CantidadEnviada=0;
@@ -279,10 +279,11 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             $scope.errorAlerta.bandera=1;
                             break;
                         }
+                        debugger
                         $http({
                           method: 'GET',
                           async: true,
-                          timeout:14000,
+                          timeout:10000,
                           url: SERVIDOR_ENVIO_PEDIDOS+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
                           
                             }).then(
