@@ -1,5 +1,13 @@
 app_angular.controller("PedidosController",['Conexion','$scope','$route',function (Conexion,$scope,$route) {
 	$scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
+	if ($scope.sessiondate.codigo_empresa==12) 
+	{
+		$scope.url='http://reymonpruebas.pedidosonline.co';		
+	}
+	else
+	{
+		$scope.url='http://reymon.pedidosonline.co';
+	}
 	$scope.validacion=false;
 	$scope.pedidos = [];
 	$scope.TABLA_BALANCE=JSON.parse(window.localStorage.getItem("TABLA_BALANCE"));
@@ -12,7 +20,6 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		$scope.pedidos=[];
 		CRUD.select('select distinct pedidos.sincronizado,pedidos.valor_impuesto,pedidos.fecha_solicitud,pedidos.sincronizado,pedidos.fecha_entrega, pedidos.rowid as rowidpedido,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total,detalle.rowid_pedido,count(detalle.rowid_pedido) cantidaddetalles,sum(detalle.cantidad) as cantidadproductos,pedidos.numpedido_erp,pedidos.estado_erp from  t_pedidos pedidos inner join erp_terceros_sucursales sucursal on sucursal.rowid=pedidos.rowid_cliente_facturacion  inner join erp_terceros terceros on terceros.rowid=sucursal.rowid_tercero  left  join t_pedidos_detalle detalle on detalle.rowid_pedido=pedidos.rowid left join erp_terceros_punto_envio punto_envio on punto_envio.rowid=pedidos.id_punto_envio where pedidos.sincronizado!="EnvioCorrecto" and  pedidos.ambiente="'+$scope.sessiondate.codigo_empresa+'" and  pedidos.usuariocreacion="'+$scope.sessiondate.nombre_usuario+'" group by  pedidos.fecha_solicitud,detalle.rowid_pedido,pedidos.rowid,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total order by pedidos.rowid desc    LIMIT 50',
 			function(elem) {
-				debugger
 				elem.tablamobile=1;$scope.pedidos.push(elem)});
 		window.setTimeout(function() {
 			CRUD.select('select distinct pedidos.sincronizado,pedidos.valor_impuesto,pedidos.fecha_solicitud,pedidos.sincronizado,pedidos.fecha_entrega, pedidos.rowid as rowidpedido,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total,detalle.rowid_pedido,count(detalle.rowid_pedido) cantidaddetalles,sum(detalle.cantidad) as cantidadproductos,pedidos.numpedido_erp,pedidos.estado_erp from  t_pedidos_web pedidos inner join erp_terceros_sucursales sucursal on sucursal.rowid=pedidos.rowid_cliente_facturacion  inner join erp_terceros terceros on terceros.rowid=sucursal.rowid_tercero  left  join t_pedidos_detalle_web detalle on detalle.rowid_pedido=pedidos.rowid left join erp_terceros_punto_envio punto_envio on punto_envio.rowid=pedidos.id_punto_envio where pedidos.usuariocreacion="'+$scope.sessiondate.nombre_usuario+'"  group by  pedidos.fecha_solicitud,detalle.rowid_pedido,pedidos.rowid,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total order by pedidos.rowid desc    LIMIT 50',
@@ -182,7 +189,6 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 								$scope.generico.rowid_item_ext=f;
 								if (f<tallas.rowid_item_ext && $scope.detallespedido[i].tallas.length+1!=tallas.rowid_item_ext && $scope.indicemenor) {
 									$scope.detallespedido[i].tallas.push($scope.generico)
-									
 								}
 								else if ( ($scope.indicePush && f==tallas.rowid_item_ext) || ($scope.detallespedido[i].tallas.length+1==tallas.rowid_item_ext  && $scope.indicePush))
 								{

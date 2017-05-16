@@ -2826,4 +2826,7 @@ app_angular.service('Factory', function ($webSql) {
         "   inner join   s_usuarios usu  on " +
         " usu.nombre_usuario=act.usuario_creacion " +
         "" )
+    
+    db.select("alter table erp_item_extencion2_detalle add column url_imagen text ")
+    db.select("alter table t_pedidos_detalle add column TipoMedida INTEGER ")
 });

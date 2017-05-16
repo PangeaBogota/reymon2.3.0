@@ -129,17 +129,17 @@
                                         <th class="column-title">Emp.</th>
                                     </thead>
                                     <tbody>
-                                        <tr ng-click="ModalItem(item)" ng-repeat="item in detallespedido">
-                                           <td>
+                                        <tr  ng-repeat="item in detallespedido">
+                                           <td ng-click="ModalItem(item)">
                                                {{item.item_referencia}}
                                            </td>
-                                           <td ng-repeat="subitem in item.tallas track by $index">
+                                           <td ng-click="ModalItem(item)" ng-repeat="subitem in item.tallas track by $index">
                                                 <center>
                                                     {{subitem.cantidad}}
                                                 </center>
                                            </td>
-                                           <td>{{item.cantidadtotal}}</td>
-                                           <td>{{item.empaque}}</td>
+                                           <td ng-click="ModalItem(item)">{{item.cantidadtotal}}</td>
+                                           <td ng-click="ModalItem(item)">{{item.empaque}}</td>
                                         </tr>
                                         <tr>
                                             <td>

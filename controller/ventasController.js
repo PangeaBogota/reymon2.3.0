@@ -7,7 +7,17 @@ var app_angular = angular.module('PedidosOnline');
 //CONTROLADOR DEL MOULO DE VENTAS
 app_angular.controller("pedidoController",['Conexion','$scope','$location','$http','$routeParams','$timeout',function (Conexion,$scope,$location,$http,$routeParams,$timeout) {
 	$scope.TABLA_BALANCE=JSON.parse(window.localStorage.getItem("TABLA_BALANCE"));
+	$scope.SeleccionDocena=true;
 	$scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
+	if ($scope.sessiondate.codigo_empresa==12) 
+	{
+		$scope.url='http://reymonpruebas.pedidosonline.co';		
+	}
+	else
+	{
+		$scope.url='http://reymon.pedidosonline.co';
+	}
+	$scope.coma="'";
 	angular.element('ul.tabs li').click(function () {
 		var tab_id = angular.element(this).find('a').data('tab');
 		if (tab_id.includes('2') ) {
@@ -35,14 +45,17 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	$scope.ListaItems=[];
 	$scope.Tercero=[];
 	$scope.Pedido=[];
+	$scope.CantidadTotalUnidad=0;
 	$scope.Pedido.rowid=0;
 	$scope.Tallas=[];
+	$scope.TallasUnidad=[];
 	$scope.FechaEntrega;
 	$scope.ColoresTalla=[];
 	$scope.itemsAgregadosPedido=[];
 	$scope.MediaDocenaCount=6;
 	$scope.ColorMasivoMedia=[];
 	$scope.ItemSeleccionado=false;
+	$scope.onpenModalColoresunidad=false;
 	$scope.LimpiarRegistros=function()
 	{
 		$scope.ListaItems=[];
@@ -57,8 +70,12 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	{
 		$scope.EditarItem=[];
 		$scope.CantidadTotalReferencia=0;
+		$scope.CantidadTotalReferenciaUnidades=0;
 		$scope.ColorMasivo=[];
 		$scope.Tallas=[];
+		$scope.TallasUnidad=[];
+		$scope.CantidadTotalUnidad=0;
+		$scope.SeleccionDocena=true;
 		$scope.ColoresTalla=[];
 		$scope.ItemSeleccionado=false;
 		$scope.ColorMasivoMedia=[];
@@ -136,23 +153,38 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			$scope.LimpiarInformacionItem();
 		}
 		$scope.ItemSeleccionado=true;
-		CRUD.select("select distinct  e.itemID,item.item_referencia,e.extencionDetalle1ID as talla,0 as cantidad,0  as multiplo,ext1_d.erp_descripcion_corta,sum(e.stock) as stock from erp_items_extenciones  e inner join erp_items item on item.rowid=e.itemID inner join  erp_item_extencion1_detalle ext1_d on ext1_d.rowid_erp=e.extencionDetalle1ID where e.itemID='"+$scope.Item.rowid_item+"'  group by e.itemID,item.item_referencia,e.extencionDetalle1ID,ext1_d.erp_descripcion_corta order by ext1_d.erp_descripcion_corta ",function(elem){
-			debugger
+		CRUD.select("select distinct  e.itemID,item.item_referencia,e.extencionDetalle1ID as talla,0 as cantidad,0  as multiplo,ext1_d.erp_descripcion_corta,sum(e.stock) as stock from erp_items_extenciones  e inner join erp_items item on item.rowid=e.itemID inner join  erp_item_extencion1_detalle ext1_d on ext1_d.rowid_erp=e.extencionDetalle1ID and ext1_d.extencion1ID=e.extencion1ID where e.itemID='"+$scope.Item.rowid_item+"'  group by e.itemID,item.item_referencia,e.extencionDetalle1ID,ext1_d.erp_descripcion_corta order by ext1_d.erp_descripcion_corta ",function(elem){
 			elem.Estado=1;
 			elem.Colores=[];
+			elem.TipoMedida=true;
 			if ($scope.EditarItem.banderaEditar==true) {
 				angular.forEach($scope.Item.Tallas,function(value,key){
-					if (value.talla==elem.talla) {
+					if (value.talla==elem.talla && value.TipoMedida==elem.TipoMedida) {
 						elem.cantidad=value.cantidad;
 						elem.Colores=value.Colores
 						if (value.Colores.length>0) {
 							elem.Estado=1;	
 						}
 					}
-
 				})
 			}
 			$scope.Tallas.push(elem);
+			$scope.tallaUnidad = jQuery.extend(true, {}, $scope.Tallas[$scope.Tallas.length-1]);
+			//$scope.tallaUnidad=angular.copy(elem);
+			$scope.tallaUnidad.TipoMedida=false;
+			if ($scope.EditarItem.banderaEditar==true) {
+				angular.forEach($scope.Item.Tallas,function(value,key){
+					if (value.talla==$scope.tallaUnidad.talla && value.TipoMedida==$scope.tallaUnidad.TipoMedida) {
+						$scope.tallaUnidad.cantidad=value.cantidad;
+						$scope.tallaUnidad.Colores=value.Colores
+						if (value.Colores.length>0) {
+							$scope.tallaUnidad.Estado=1;	
+						}
+					}
+				})
+			}
+			//$scope.Tallas.push($scope.tallaUnidad);
+			$scope.TallasUnidad.push($scope.tallaUnidad);
 			$scope.calcularTotalCantidad();
 		})
 	}
@@ -196,7 +228,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		if (accion=="restar") {
 			for (var i = 0;i<$scope.Tallas.length;i++) {
 
-				if ($scope.Tallas[i].talla==talla) {
+				if ($scope.Tallas[i].talla==talla && $scope.Tallas[i].TipoMedida==$scope.SeleccionDocena) {
 					if ($scope.Tallas[i].cantidad==0) {
 						$scope.Tallas[i].Colores=[];
 						$scope.AgregarColoresMasivoTalla(talla);
@@ -221,7 +253,8 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		else
 		{
 			for (var i = 0;i<$scope.Tallas.length;i++) {
-				if ($scope.Tallas[i].talla==talla) {
+				debugger
+				if ($scope.Tallas[i].talla==talla && $scope.Tallas[i].TipoMedida==$scope.SeleccionDocena) {
 					if ($scope.Item.item_custom1!="SI") {
 						$scope.Tallas[i].cantidad+=0.5;	
 						$scope.Tallas[i].multiplo++;
@@ -242,6 +275,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		$scope.calcularDireferenciaTallasColor();
 	}
 	$scope.CantidadTotalReferencia=0;
+	$scope.CantidadTotalReferenciaUnidades=0;
 	$scope.ColorMasivo=[];
 	$scope.CantidadDocena=12;
 	$scope.calcularTotalCantidad=function()
@@ -250,6 +284,10 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		for (var i = 0;i<$scope.Tallas.length;i++) {
 			$scope.CantidadTotalReferencia+=$scope.Tallas[i].cantidad;
 		}
+		$scope.CantidadTotalReferenciaUnidades=0;
+		for (var i = 0; i < $scope.TallasUnidad.length; i++) {
+			$scope.CantidadTotalReferenciaUnidades+=$scope.TallasUnidad[i].cantidad;
+		}
 	}
 	$scope.TallasDocena=function()
 	{
@@ -257,7 +295,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		$('#OpenModalColor').click();
 		if ($scope.ColorMasivo.length==0) {
 			$scope.CantidadDocena=12;
-			CRUD.select("select distinct a.itemID,a.extencionDetalle2ID,0 as cantidad,d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where itemID='"+$scope.Item.rowid_item+"' order by extencionDetalle2ID",function(elem){
+			CRUD.select("select distinct a.itemID,a.extencionDetalle2ID,0 as cantidad,d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID  where itemID='"+$scope.Item.rowid_item+"' order by extencionDetalle2ID",function(elem){
 				$scope.ColorMasivo.push(elem);
 			})		
 		}	
@@ -267,6 +305,10 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	{
 		var cantidad=0;
 		for (var a=0;a<$scope.Tallas.length;a++) {
+			if ($scope.Tallas[a].TipoMedida==false) 
+			{
+				continue;
+			}
 			for (var i = 0;i<$scope.Tallas[a].Colores.length;i++) {
 				cantidad+=$scope.Tallas[a].Colores[i].cantidad;
 			}
@@ -316,7 +358,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		}
 		for (var i =0; i<$scope.Tallas.length;i++ ) {
 			var CantidadBase=$scope.Tallas[i].cantidad;
-			CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
+			CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
 				var CantidadTalla=0;
 				var InidicadorArray=0;
 				var ValidacionEstadoCompleto=true;
@@ -358,6 +400,36 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			})			
 		}
 	}
+	$scope.openModalColoresUnidad=function(item,talla,cantidad){
+		$scope.onpenModalColoresunidad=true;
+		item=item.trim();
+		$scope.InfoItemAdicional=[];
+		$scope.cantidadParcialItem=$scope.InfoItemAdicional.cantidad
+		$scope.InfoItemAdicional.talla=talla;
+		$scope.ColoresTalla=[];
+		$scope.contadorDetalle2=0;
+		$scope.banderaConsumo=1;
+		for (var i =0;i<$scope.TallasUnidad.length;i++) {
+
+			if ($scope.TallasUnidad[i].talla==talla && $scope.SeleccionDocena==$scope.TallasUnidad[i].TipoMedida) {
+				if ($scope.TallasUnidad[i].Colores.length!=0) {
+					for (var f=0;f<$scope.TallasUnidad[i].Colores.length;f++) {
+						$scope.TallasUnidad[i].Colores[f].cantidadextension1=cantidad;	
+					}
+					$scope.ColoresTalla=$scope.TallasUnidad[i].Colores;
+					$scope.banderaConsumo=0;
+				}
+			}
+		}
+
+		if ($scope.banderaConsumo==1) {
+			CRUD.select("select a.*,0 as cantidad,'"+cantidad+"' as cantidadextension1,d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID where itemID='"+item+"'  and  extencionDetalle1ID='"+talla+"'  order by a.extencionDetalle2ID ",function(elem){
+				$scope.ColoresTalla.push(elem);
+			})	
+		}
+		$scope.CantidadTotalUnidadF();
+		$('#ColoresUnidad').click();
+	}
 	$scope.openModalDetalle2=function(item,talla,cantidad){
 		if (cantidad==undefined) {
 			Mensajes('Agregar Cantidad','error','');
@@ -385,7 +457,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		$scope.banderaConsumo=1;
 		for (var i =0;i<$scope.Tallas.length;i++) {
 
-			if ($scope.Tallas[i].talla==talla) {
+			if ($scope.Tallas[i].talla==talla && $scope.SeleccionDocena==$scope.Tallas[i].TipoMedida) {
 				if ($scope.Tallas[i].Colores.length!=0) {
 					for (var f=0;f<$scope.Tallas[i].Colores.length;f++) {
 						$scope.Tallas[i].Colores[f].cantidadextension1=cantidad;	
@@ -397,7 +469,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		}
 
 		if ($scope.banderaConsumo==1) {
-			CRUD.select("select a.*,0 as cantidad,'"+cantidad+"' as cantidadextension1,d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID where itemID='"+item+"'  and  extencionDetalle1ID='"+talla+"'  order by a.extencionDetalle2ID ",function(elem){
+			CRUD.select("select a.*,0 as cantidad,'"+cantidad+"' as cantidadextension1,d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID where itemID='"+item+"'  and  extencionDetalle1ID='"+talla+"'  order by a.extencionDetalle2ID ",function(elem){
 				$scope.ColoresTalla.push(elem);
 			})	
 		}
@@ -409,6 +481,97 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		for (var i = 0;i<$scope.ColoresTalla.length;i++) {
 			$scope.cantidadRestanteColor-=$scope.ColoresTalla[i].cantidad;
 		}
+	}
+	$scope.CantidadTotalUnidadF=function()
+	{
+		$scope.CantidadTotalUnidad=0;
+		for (var i = 0; i <$scope.ColoresTalla.length; i++) {
+			$scope.CantidadTotalUnidad+=$scope.ColoresTalla[i].cantidad;
+		}
+		
+	}
+	$scope.onChangeCantidadColorunidad=function(extension,stock,cantidad){
+		if ($scope.Item.item_custom1!="SI") {
+			cantidad=cantidad*12;
+		}
+		for (var i = 0;i<$scope.ColoresTalla.length;i++) {
+			if ($scope.ColoresTalla[i].extencionDetalle2ID==extension) {
+				if ($scope.Item.item_custom1!="SI") {
+					
+					$scope.validacionStock=$scope.ColoresTalla[i].cantidad;
+					if ($scope.validacionStock>stock && $scope.ColoresTalla[i].estadoID==4003) {
+						$scope.ColoresTalla[i].cantidad=0;
+						Mensajes("La Cantidad no puede ser mayor al stock","error","");
+					}
+					if ($scope.validacionStock>stock) 
+					{
+						Mensajes("La Cantidad sobrepasa el stock","information","");
+					}
+				}else{
+					$scope.validacionStock=$scope.ColoresTalla[i].cantidad;
+					if ($scope.validacionStock>stock && $scope.ColoresTalla[i].estadoID==4003) {
+						$scope.ColoresTalla[i].cantidad=0;
+						Mensajes("La Cantidad no puede ser mayor al stock","error","");
+					}
+				}
+			}
+		}
+		$scope.CantidadTotalUnidadF();
+	}
+	
+	$scope.adicionarCantidadColorUnidad=function(extension,accion,stock,cantidad)
+	{
+		
+		if (accion=="restar") {
+			for (var i = 0;i<$scope.ColoresTalla.length;i++) {
+
+				if ($scope.ColoresTalla[i].extencionDetalle2ID==extension) {
+					if ($scope.ColoresTalla[i].cantidad==0) {
+						return
+					}
+					if ($scope.Item.item_custom1!="SI") {
+						$scope.ColoresTalla[i].cantidad-=1;
+						$scope.contadorDetalle2--;	
+					}else{
+						$scope.ColoresTalla[i].cantidad-=1;
+						$scope.contadorDetalle2--;		
+					}
+				}
+			}
+		}
+		else
+		{
+			for (var i = 0;i<$scope.ColoresTalla.length;i++) {
+				if ($scope.ColoresTalla[i].extencionDetalle2ID==extension) {
+					if ($scope.Item.item_custom1!="SI") {
+						$scope.ColoresTalla[i].cantidad+=1;	
+						$scope.Validarstock=$scope.ColoresTalla[i].cantidad;
+						$scope.contadorDetalle2++;	
+						if ($scope.Validarstock>stock && $scope.ColoresTalla[i].estadoID==4003) {
+							$scope.ColoresTalla[i].cantidad-=1;	
+							$scope.contadorDetalle2--;	
+							Mensajes("La Cantidad no puede ser mayor al stock","error","");
+						}
+						if ($scope.Validarstock>stock) 
+						{
+							Mensajes("La Cantidad sobrepasa el stock","information","");
+						}
+					}else{
+						$scope.ColoresTalla[i].cantidad+=1;	
+						$scope.contadorDetalle2++;	
+						$scope.Validarstock=$scope.ColoresTalla[i].cantidad;
+
+						if ($scope.Validarstock>stock && $scope.ColoresTalla[i].estadoID==4003) {
+							$scope.ColoresTalla[i].cantidad-=1;	
+							$scope.contadorDetalle2--;	
+							Mensajes("La Cantidad no puede ser mayor al stock","error","");
+						}
+					}
+					
+				}
+			}
+		}
+		$scope.CantidadTotalUnidadF();
 	}
 	$scope.adicionarCantidadDetalle2=function(extension,accion,stock,cantidad)
 	{	
@@ -430,10 +593,8 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 						$scope.ColoresTalla[i].cantidad-=1;
 						$scope.contadorDetalle2--;		
 					}
-					
 				}
 			}
-				
 		}
 		else
 		{
@@ -486,11 +647,27 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	$scope.agregarColoresTalla=function(){
 		$scope.ModalColorOpen=false;
 		for (var i = 0;i<$scope.Tallas.length;i++) {
-			if ($scope.Tallas[i].talla==$scope.InfoItemAdicional.talla) {
+			if ($scope.Tallas[i].talla==$scope.InfoItemAdicional.talla && $scope.Tallas[i].TipoMedida==$scope.SeleccionDocena) {
 				$scope.Tallas[i].Colores=$scope.ColoresTalla;
 			}
 		}
 		$scope.calcularDireferenciaTallasColor();
+
+	}
+	$scope.agregarColoresTallaUnidad=function(){
+		for (var i = 0;i<$scope.TallasUnidad.length;i++) {
+			if ($scope.TallasUnidad[i].talla==$scope.InfoItemAdicional.talla && $scope.TallasUnidad[i].TipoMedida==$scope.SeleccionDocena) {
+				$scope.TallasUnidad[i].Colores=$scope.ColoresTalla;
+				$scope.TallasUnidad[i].cantidad=$scope.CantidadTotalUnidad;
+			}
+			
+		}
+		debugger
+		$scope.ColoresTalla=[];
+		$scope.CantidadTotalUnidad=0;
+		$scope.calcularDireferenciaTallasColor();
+		$scope.calcularTotalCantidad();
+		$scope.onpenModalColoresunidad=false;
 
 	}
 	$scope.AgregarColoresMasivoTalla=function(TallaChange)
@@ -503,7 +680,11 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			if ($scope.Tallas[i].talla!=TallaChange) {
 				continue;
 			}
-			CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
+			if ($scope.Tallas[i].TipoMedida==false) 
+			{
+				continue;
+			}
+			CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and d.extencion2ID=a.extencion2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
 				if (elem.length>0) {
 					var CantidadTalla=0;
 					var InidicadorArray=0;
@@ -559,7 +740,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		$scope.ModalColorMasivo=true;
 		$('#OpenModalColorMedia').click();
 		if ($scope.ColorMasivoMedia.length==0) {
-			CRUD.select("select distinct a.itemID,a.extencionDetalle2ID,0 as cantidad,d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where itemID='"+$scope.Item.rowid_item+"' order by extencionDetalle2ID",function(elem){
+			CRUD.select("select distinct a.itemID,a.extencionDetalle2ID,0 as cantidad,d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID  where itemID='"+$scope.Item.rowid_item+"' order by extencionDetalle2ID",function(elem){
 				$scope.ColorMasivoMedia.push(elem);
 				
 			})		
@@ -609,7 +790,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			if (CantidadBase% 1 != 0) {
 				var cantidadColores=$scope.cantidadColor(i);
 				if (((CantidadBase*12)-cantidadColores)==6) {
-					CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
+					CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
 						var CantidadTalla=0;
 						var InidicadorArray=0;
 						var ContadorColor=0;
@@ -671,7 +852,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		if (CantidadBase% 1 != 0) {
 			var cantidadColores=$scope.cantidadColor(i);
 			if (((CantidadBase*12)-cantidadColores)==6) {
-				CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
+				CRUD.selectAllinOne("select a.*,0 as cantidad,'"+CantidadBase+"' as cantidadextension1,"+i+" as  IndicadorArray, d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID  where a.itemID='"+$scope.Tallas[i].itemID+"'  and  a.extencionDetalle1ID='"+$scope.Tallas[i].talla+"' order by extenciondetalle2id ",function(elem){
 					debugger
 					var CantidadTalla=0;
 					var InidicadorArray=0;
@@ -752,6 +933,9 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		var CatidadtotalTalla=0;
 		for (var i =0;i< $scope.Tallas.length ;i++) {
 			CatidadtotalTalla+=$scope.Tallas[i].cantidad;
+		}
+		for (var i =0;i< $scope.TallasUnidad.length ;i++) {
+			CatidadtotalTalla+=$scope.TallasUnidad[i].cantidad;
 		}
 		if (CatidadtotalTalla==0) {
 			return 'Se debe Asignar Cantidad almenos a una talla.';
@@ -853,10 +1037,11 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			}
 		}
 		$scope.Item.Tallas=$scope.tallasAgregar;
+		$scope.Item.TallasUnidad=$scope.TallasUnidad;
 		$scope.Item.ColorMasivo=$scope.ColorMasivo;
 		$scope.Item.ColorMasivoMedia=$scope.ColorMasivoMedia;
 		$scope.Item.EmpaqueS=$scope.Item.empaque.tipo_reg_nombre.slice(0,3);
-		$scope.itemsAgregadosPedido.unshift($scope.Item);
+		//$scope.itemsAgregadosPedido.unshift($scope.Item);
 		if ($scope.EditarItem.banderaEditar==true) 
 		{
 			
@@ -887,12 +1072,38 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		$scope.CalcularCantidadValorTotal();
 		$scope.EditarItem=[];
 	}
+	$scope.ItemModal=[];
+	$scope.ColoresModal=[];
+	$scope.ModalItem=function(item){
+		debugger
+		$scope.ColoresModal=[];
+		$scope.ModalColoreOpen=true;
+		$('#ColoresAgregados').click();
+		$scope.ItemModal=[];
+		$scope.ItemModal=angular.copy(item)	;
+		for (var i = 0; i < $scope.ItemModal.tallas.length; i++) {
+			if ( $scope.ItemModal.tallas[i].cantidad>0) {
+				$scope.ItemModal.tallas[i].colores=[];
+				CRUD.selectAllinOne("select  '"+i+"' as array,c.*,b.cantidad from t_pedidos_detalle a inner join t_pedidos_detalle_detalle  b on b.pedidoDetalle=a.rowid inner join erp_items_extenciones ext on ext.itemID=a.rowid_item and ext.extencionDetalle1ID=a.item_ext1 and ext.extencionDetalle2ID=b.itemExtension2Detalle inner join erp_item_extencion2_detalle c on c.rowid_erp=ext.extencionDetalle2ID and c.extencion2ID=ext.extencion2ID    where a.rowid_pedido='"+item.rowid_pedido+"' and  a.rowid_item='"+item.rowid_item+"'  and a.item_ext1='"+$scope.ItemModal.tallas[i].talla+"'",function(elem){
+					if (elem.length>0) {
+						$scope.ItemModal.tallas[elem[0].array].colores=elem;
+					}
+				})
+			}
+			else
+			{
+				$scope.ItemModal.tallas[i]=[];	
+				$scope.ItemModal.tallas[i].cantidad=0;		
+			}
+		}
+		
+	}
 	$scope.GuardarItem=function(Item)
     {
     	ProcesadoShow();
     	angular.forEach(Item.Tallas,function(detalle,key){
 			$scope.detalle=[];
-			if (detalle.cantidad==0) {
+			if (detalle.cantidad==0 || detalle.cantidad==undefined) {
 				return;
 			}
 			detalle.cantidad=detalle.cantidad1;
@@ -919,6 +1130,79 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			$scope.detalle.empaque=Item.empaque.tipo_reg_nombre;
 			$scope.detalle.item_ext1=detalle.talla;
 			$scope.detalle.estado=0;
+			$scope.detalle.indicador=$scope.sessiondate.key;
+			$scope.detalle.TipoMedida=1378
+			if (Item.observacion==undefined) {
+				$scope.detalle.observaciones='';
+			}
+			else
+			{
+				$scope.detalle.observaciones=Item.observacion;	
+			}
+			$scope.detalle.fechacreacion=$scope.CurrentDate();
+			CRUD.insert('t_pedidos_detalle',$scope.detalle);
+			CRUD.select("select max(rowid) as rowid from t_pedidos_detalle",function(Detalle){
+				var NewQuery=true
+				var stringSentencia="";
+				var contador=0;
+				for (var i = 0;i<detalle.Colores.length;i++) {
+					contador++;
+					if (detalle.Colores[i].cantidad>0) {
+						if (NewQuery) {
+							stringSentencia=" insert into t_pedidos_detalle_detalle  ";
+							NewQuery=false;
+						}
+						else{
+							stringSentencia+= "   UNION   ";
+						}
+						stringSentencia+=  "  SELECT  "+
+						"null,'"+parseInt(Detalle.rowid)+
+						"','"+detalle.Colores[i].extencionDetalle2ID+"','"+detalle.Colores[i].cantidad+"',0,0,0,0,0,0,"+detalle.Colores[i].rowid_erp+""; 
+					}
+					if (contador==499) {
+						CRUD.Updatedynamic(stringSentencia)
+						NewQuery=true;
+						stringSentencia="";
+						contador=0;
+					}
+				}	
+				if (stringSentencia!="") {
+					CRUD.Updatedynamic(stringSentencia)
+					NewQuery=true;
+					stringSentencia="";
+					contador=0;
+				}
+			})
+		})
+		angular.forEach(Item.TallasUnidad,function(detalle,key){
+			$scope.detalle=[];
+			if (detalle.cantidad==0 || detalle.cantidad==undefined) {
+				return;
+			}
+			$scope.detalle.rowid_item=Item.rowid_item;
+			$scope.detalle.rowid_pedido=$scope.Pedido.rowid;
+			$scope.detalle.linea_descripcion=Item.descripcion;
+			$scope.detalle.id_unidad=Item.id_unidad;
+			$scope.detalle.cantidad=detalle.cantidad;
+			$scope.detalle.factor=0;
+			$scope.detalle.cantidad_base=detalle.cantidad;
+			$scope.detalle.stock=0;
+			$scope.detalle.porcen_descuento=Item.impuesto_porcentaje;
+			$scope.calculo=[];
+			$scope.calculo.valor_base=Item.precio*detalle.cantidad;
+			$scope.calculo.iva=$scope.calculo.valor_base*Item.impuesto_porcentaje/100;
+			$scope.detalle.valor_impuesto=$scope.calculo.iva
+			$scope.calculo.total=$scope.calculo.valor_base+$scope.calculo.iva;
+			$scope.detalle.valor_descuento=0;
+			$scope.detalle.rowid_item_ext=parseInt(detalle.erp_descripcion_corta);
+			$scope.detalle.valor_total_linea=$scope.calculo.total;
+			$scope.detalle.precio_unitario=Item.precio;
+			$scope.detalle.valor_base=Item.precio*detalle.cantidad;
+			$scope.detalle.usuariocreacion=$scope.sessiondate.nombre_usuario;
+			$scope.detalle.empaque=Item.empaque.tipo_reg_nombre;
+			$scope.detalle.item_ext1=detalle.talla;
+			$scope.detalle.estado=0;
+			$scope.detalle.TipoMedida=1377
 			$scope.detalle.indicador=$scope.sessiondate.key;
 			if (Item.observacion==undefined) {
 				$scope.detalle.observaciones='';
@@ -1012,7 +1296,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	$scope.onChangeCantidad=function(talla,stock)
 	{
 		for (var i = 0;i<$scope.Tallas.length;i++) {
-			if ($scope.Tallas[i].talla==talla) {
+			if ($scope.Tallas[i].talla==talla &&  $scope.Tallas[i].TipoMedida==$scope.SeleccionDocena) {
 				$scope.Tallas[i].Colores=[];
 			}
 		}
@@ -1159,6 +1443,15 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	$scope.ModalColorOpen=false;
 	$scope.ModalColorMasivo=false;
 	$scope.$on('$routeChangeStart', function(event,next, current) { 
+		debugger
+		if ($scope.onpenModalColoresunidad==true) 
+		{
+			$scope.agregarColoresTallaUnidad();
+			$scope.onpenModalColoresunidad=false;
+			event.preventDefault();
+			$('#btnCerrarModalCantidadUnidad').click();
+			return;
+		}
 		if ($scope.ModalColorMasivo==true) {
 			$scope.ModalColorMasivo=false;
 			$scope.AgregarColoresMasivo();
@@ -1217,12 +1510,12 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	}
 	$scope.ItemModal=[];
 	$scope.openmodalBalance=false;
-	$scope.ModalItem=function(item){
+	/*$scope.ModalItem=function(item){
 		$scope.openmodalBalance=true;
 		$('#ColoresAgregados').click();
 		$scope.ItemModal=[];
 		$scope.ItemModal=item;
-	}
+	}*/
 	$scope.GuardarEncabezado=function()
 	{
 		var codigoclave=0;
@@ -1317,7 +1610,6 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	//CARGAR PEDIDO SI EL PARAMETRO DE LA URL TRAE UN ID
 	if ($scope.rowid_Pedido!=undefined) {
 		ProcesadoShow();
-		debugger
 		$scope.rowid_Pedido=$scope.rowid_Pedido.split('=')[1];
 		$scope.acciones.tituloPagina='Pedido # '+$scope.rowid_Pedido;
 		CRUD.select('select*from t_pedidos where rowid='+$scope.rowid_Pedido+' ',function(pedido){
@@ -1353,6 +1645,70 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	}
 	$scope.CantidadTotalPedido=0;
 	$scope.ItemsPedidoAgregados=function()
+	{
+		$scope.contadores=[];
+		$scope.tallasAgregar=[];
+		$scope.contadores.cont1=0;
+		$scope.contadores.cont2=0;
+		$scope.contadores.cont3=0;
+		$scope.contadores.cont4=0;
+		$scope.contadores.cont5=0;
+		var consulta="select distinct dt.rowid_item,dt.linea_descripcion,dt.rowid_pedido,item.item_referencia,dt.empaque  from t_pedidos_detalle dt inner join erp_items item on item.rowid=dt.rowid_item where dt.rowid_pedido ='"+$scope.rowid_Pedido+"'";
+		CRUD.select(consulta,function(elem){
+			elem.tallas=[];
+			elem.cantidadtotal=0;
+			$scope.itemsAgregadosPedido.unshift(elem);
+			$scope.contadores.cont1++;
+			var query2="select   item_ext1 as c   from t_pedidos_detalle where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' group by item_ext1 ";
+			CRUD.selectAllinOne(query2,function(contadorItems){
+				var query3="select "+contadorItems.length+" as contador ,rowid_item_ext, item_ext1 as talla,sum(cantidad) as cantidad,rowid_item from t_pedidos_detalle where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' group by rowid_item_ext, item_ext1,rowid_item order by rowid_item_ext asc"
+				CRUD.select(query3,function(tallas){
+					$scope.contadores.cont4++;
+					$scope.indicePush=true;
+					$scope.indicemenor=true;
+					for (var i =0;i<$scope.itemsAgregadosPedido.length;i++) {
+						var a=$scope.itemsAgregadosPedido[i].rowid_item;
+						if (a==tallas.rowid_item) {
+							$scope.generico={};
+							$scope.generico.contador=0;
+							$scope.generico.talla=0;
+							$scope.generico.cantidad=0;
+							$scope.generico.rowid_item=0;
+							for (var f=1;f<9;f++) {
+								$scope.generico.rowid_item_ext=f;
+								if (f<tallas.rowid_item_ext && $scope.itemsAgregadosPedido[i].tallas.length+1!=tallas.rowid_item_ext && $scope.indicemenor) {
+									$scope.itemsAgregadosPedido[i].tallas.push($scope.generico)
+								}
+								else if ( ($scope.indicePush && f==tallas.rowid_item_ext) || ($scope.itemsAgregadosPedido[i].tallas.length+1==tallas.rowid_item_ext  && $scope.indicePush))
+								{
+									$scope.itemsAgregadosPedido[i].tallas.push(tallas)
+									$scope.itemsAgregadosPedido[i].cantidadtotal+=tallas.cantidad;
+									$scope.contadores.cont5+=tallas.cantidad;
+									$scope.indicemenor=false;
+									$scope.indicePush=false;
+								}
+								else if ($scope.contadores.cont4>=tallas.contador) {
+									
+									if ($scope.itemsAgregadosPedido[i].tallas.length<8) {
+										$scope.itemsAgregadosPedido[i].tallas.push($scope.generico)
+									}
+									if ($scope.itemsAgregadosPedido[i].tallas.length+1==9) {
+										$scope.contadores.cont4=0;
+									}
+									
+								}
+								
+							}
+							
+							
+						}
+						
+					}
+				})
+			})
+		})
+	}
+	/*$scope.ItemsPedidoAgregados=function()
 	{
 		$scope.CantidadTotalPedido=0;
 		$scope.itemsAgregadosPedido=[];
@@ -1418,10 +1774,9 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 										{
 											$scope.ItemsPedido[Indicador].Tallas[v].cantidad1=$scope.Detalles[x].cantidad
 											$scope.ItemsPedido[Indicador].Tallas[v].cantidad=$scope.Detalles[x].cantidad/12;
-											
+											$scope.ItemsPedido[Indicador].Tallas[v].TipoMedida=$scope.Detalles[x].TipoMedida;
 										}
 									}
-									
 								}
 								$scope.OrganizarTallasTabla();
 								for (var v = 0; v < $scope.ItemsPedido[Indicador].Tallas.length; v++) {
@@ -1429,7 +1784,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 									if ($scope.ItemsPedido[Indicador].Tallas[v].cantidad1>0) 
 									{
 										$scope.CantidadTotalPedido+=$scope.ItemsPedido[Indicador].Tallas[v].cantidad1;
-										CRUD.selectAllinOne("select '"+v+"' as v,'"+Indicador+"' indicador,a.*,0 as cantidad,'"+$scope.ItemsPedido[Indicador].Tallas[v].cantidad1+"' as cantidadextension1,d.rgba from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID where itemID='"+$scope.ItemsPedido[Indicador].rowid_item+"'  and  extencionDetalle1ID='"+$scope.ItemsPedido[Indicador].Tallas[v].talla+"'  order by a.extencionDetalle2ID ",function(coloresC){
+										CRUD.selectAllinOne("select '"+v+"' as v,'"+Indicador+"' indicador,a.*,0 as cantidad,'"+$scope.ItemsPedido[Indicador].Tallas[v].cantidad1+"' as cantidadextension1,d.rgba,d.url_imagen from erp_items_extenciones a inner join erp_item_extencion2_detalle d on d.rowid_erp=a.extencionDetalle2ID and a.extencion2ID=d.extencion2ID where itemID='"+$scope.ItemsPedido[Indicador].rowid_item+"'  and  extencionDetalle1ID='"+$scope.ItemsPedido[Indicador].Tallas[v].talla+"'  order by a.extencionDetalle2ID ",function(coloresC){
 											if (coloresC.length>0) 
 											{
 												var C1=coloresC[0].v;
@@ -1446,21 +1801,18 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 												$scope.itemsAgregadosPedido=$scope.ItemsPedido;	
 												$scope.CalcularCantidadValorTotal();
 											}
-											
 										})
 									}
 								}
 							}
-
 						})
 					}
-					
 				})
 			})
 		})
-		
-		
 	}
+
+
 	$scope.OrganizarTallasTabla=function()
 	{
 		for (var t = 0; t < $scope.ItemsPedido.length; t++) {
@@ -1501,8 +1853,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			}
 			$scope.ItemsPedido[t].Tallas=$scope.tallasAgregar;
 		}
-		
-	}
+	}*/
 	$scope.onConfirmarSalida=function(accion){
 		if (accion=='salir') {
 			var a='';
@@ -1523,7 +1874,6 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 		}
 		else if (accion=='guardar') {
 			$scope.confimar.salir=false;
-			debugger
 			if ($scope.Pedido.rowid>0) 
 			{
 				$scope.FinalizarPedido();
@@ -1532,7 +1882,6 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			{
 				$scope.GuardarEncabezado();
 			}
-			
 		}
 	}
 	$scope.FinalizarPedido=function()
@@ -1587,9 +1936,23 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 			MODAL_SINCRONIZACION=0;
 		}
 	}, 1000);
+	$scope.CambiarSeleccion=function(estado)
+    {
+    	if (estado==1) 
+    	{
+    		$scope.SeleccionDocena=true;
+    	}
+    	else
+		{
+			$scope.SeleccionDocena=false;	
+		}
+		$scope.$apply();
+		//$scope.$digest()
+    }
 	var meses = new Array ("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
     var diasSemana = new Array("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado");		
 	$scope.fechaSincronizacion=window.localStorage.getItem("FECHA_SINCRONIZACION");
+
 	$scope.sincronizar=function(){
 		
 		$scope.errorAlerta=[];
@@ -1606,8 +1969,6 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
             }
             else
             {
-                
-                
             }
             CRUD.Updatedynamic("delete from crm_actividades");
             CRUD.Updatedynamic("delete from erp_items");
@@ -2363,7 +2724,8 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].usuariomodificacion+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].fechacreacion+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].fechamodificacion+
-                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rgba+"' "; 
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rgba+
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].url_imagen+"' "; 
                             if (contador==499) {
                                 CRUD.Updatedynamic(stringSentencia)
                                 NewQuery=true;

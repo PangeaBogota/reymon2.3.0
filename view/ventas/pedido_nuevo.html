@@ -1,3 +1,11 @@
+<style type="text/css">
+    .test {
+    width:120px;
+    height:100%;
+    background-repeat:no-repeat;background-size:120px 100%;
+    border: 1px solid black;
+}
+</style>
 <div ng-controller="pedidoController">
     <div class="page-title">
         <div class="title_left">
@@ -126,20 +134,35 @@
                                         <select   ng-model="Item.empaque"   ng-options="Empaques as Empaques.tipo_reg_nombre for Empaques in Empaques " class="form-control" required > </select> 
                                     </div>
                                 </div>
-                            </div>                   
+                            </div>     
+                            <div class="" ng-show="ItemSeleccionado==true">
+                                <div class=" pull-right">
+                                    <button class="btn btn-info" ng-click="CambiarSeleccion(0)" ng-show="SeleccionDocena">UND.</button>
+                                    <button class="btn btn-info" ng-click="CambiarSeleccion(1)" ng-hide="SeleccionDocena">DOC.</button>
+                                    <button class="btn btn-primary" ng-click="TallasMediaDocena()" ng-show="SeleccionDocena">6</button>
+                                    <button class="btn btn-success" ng-click="TallasDocena()" ng-show="SeleccionDocena">12</button>
+                                </div>
+                            </div>              
                             <div class="form-group" ng-show="ItemSeleccionado==true" >
                                 <table class="table  table-responsive table-hover">
                                     <thead>
                                         <tr>
-                                        <th>Tallas</th>
-                                        <th>Cantidad</th>
-                                        <th><button class="btn btn-primary" ng-click="TallasMediaDocena()">6</button><button class="btn btn-success" ng-click="TallasDocena()">12</button> </th>
+                                        <th style="text-align: center;">Tallas</th>
+                                        <th style="text-align: center;">Cantidad</th>
+                                        <th style="text-align: center;"> Accion </th>
                                     </tr>
                                     </thead>
-                                    
-                                    <tr  ng-repeat="tallas in Tallas">
-                                        <td class="col-md-2 col-ms-2 col-xs-2">{{tallas.talla}}</td>
-                                        <td class="col-md-4  col-ms-4 col-xs-4">
+                                    <!--SELECCION DOCENAS-->
+                                    <tr  ng-repeat="tallas in Tallas " ng-show="SeleccionDocena"  >
+                                        <td  style="align-content:center;" >
+                                            <div class="row">
+                                                <div class="col-md-6 col-md-offset-5">
+                                                    {{tallas.talla}}
+                                                </div>        
+                                            </div>
+                                        
+                                        </td>
+                                        <td    style="align-content:center;" >
                                             <div >
                                                  <div class=" input-group"  >
                                                     <span class="input-group-btn" ng-click="cantidadTalla(tallas.talla,'restar')">
@@ -149,7 +172,7 @@
                                                             </span>
                                                         </button>
                                                     </span>
-                                                    <input type="number" class="form-control " ng-model="tallas.cantidad"  ng-change="onChangeCantidad(tallas.talla)"  step="any"  style="min-width:50px" min="0" />
+                                                    <input type="number" class="form-control " ng-model="tallas.cantidad"  ng-change="onChangeCantidad(tallas.talla)"  step="any"  style="min-width:50px;text-align:center;" min="0" />
                                                     <span class="input-group-btn" ng-click="cantidadTalla(tallas.talla,'suma',tallas.stock)">
                                                         <button type="button" class="btn btn-default">
                                                             <span class="glyphicon glyphicon-plus">
@@ -159,20 +182,61 @@
                                                 </div> 
                                             </div>
                                         </td>
-                                        <td>
+                                        <td  >
+                                        <div class="input-group">
                                             <button class="btn btn-success colores-add"  ng-click="openModalDetalle2(tallas.itemID,tallas.talla,tallas.cantidad)"><span class="fa fa-plus"></span></button>
                                             <span class="fa fa-exclamation-triangle" style="color:#FF0040"  ng-show="tallas.Estado==2"></span>
                                             <span class="fa fa-check-circle" style="color:#2F9B89" ng-show="tallas.Estado==1"></span>
+                                        </div>
+                                            
                                         </td>
                                     </tr>
+                                    <!--SELECCION DOCENAS-->
+                                    <!--SELECCION UNIDAD-->
+                                    <tr  ng-repeat="tallas in TallasUnidad " ng-hide="SeleccionDocena"  >
+                                        <td  style="align-content:center;" >
+                                            <div class="row">
+                                                <div class="span12" style="text-align: center;">
+                                                    {{tallas.talla}}
+                                                </div>        
+                                            </div>
+                                        
+                                        </td>
+                                        <td    style="align-content:center;" >
+                                            <div >
+                                                 <div class="span12"  >
+                                                    
+                                                    <input type="number" class="form-control " ng-model="tallas.cantidad" disabled  ng-change="onChangeCantidad(tallas.talla)"  step="any"  style="min-width:50px;text-align:center;" min="0" />
+                                                    
+                                                </div> 
+                                            </div>
+                                        </td>
+                                        <td  >
+                                            <div class="row">
+                                                <div class="span12">
+                                                    <button class="btn btn-success colores-add"  ng-click="openModalColoresUnidad(tallas.itemID,tallas.talla,tallas.cantidad)"><span class="fa fa-plus"></span></button>
+                                                    <span class="fa fa-exclamation-triangle" style="color:#FF0040"  ng-show="tallas.Estado==2"></span>
+                                                    <span class="fa fa-check-circle" style="color:#2F9B89" ng-show="tallas.Estado==1"></span>
+                                                </div>
+                                            </div>
+                                        
+                                            
+                                        </td>
+                                    </tr>
+                                    <!--SELECCION UNIDAD-->
                                     <tr>
-                                        <td>Total Cantidad</td>
+                                        <td>Cantidad Docenas</td>
                                         <td>{{CantidadTotalReferencia}}</td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td>Total Unidades</td>
-                                        <td>{{CantidadTotalReferencia*12}}</td>
+                                        <td>Cantidad Unidades</td>
+                                        <td>{{CantidadTotalReferenciaUnidades}}</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total </td>
+                                        <td>{{(CantidadTotalReferencia*12)+CantidadTotalReferenciaUnidades}}</td>
                                         <td></td>
                                     </tr>
                                 </table>
@@ -196,7 +260,7 @@
                     <div class="tab-pane" id="tab_3">
                         <form class="form-horizontal form-label-left">
                             <div class="form-group">
-                                <div style="overflow-x:auto;" class="table-resposive" >
+                                <!--<div style="overflow-x:auto;" class="table-resposive" >
                                     <table class="table  table-striped responsive-utilities jambo_table bulk_action">
                                         <thead>
                                             <th class="column-title">
@@ -246,7 +310,52 @@
                                             </tr>
                                         </tbody>
                                     </table>
-                                </div>
+                                </div>-->
+                                <div class="row" style="margin: 0px"><h3>Items</h3></div>
+                            <div style="overflow-x:auto;" class="table-resposive">
+                                <table class="table  table-striped responsive-utilities jambo_table bulk_action">
+                                    <thead>
+                                        <th class="column-title">
+                                            Ref. 
+                                        </th>
+                                        <th ng-repeat="data in  TABLA_BALANCE" class="column-title">
+                                            {{data.TALLAS}}
+                                        </th>
+                                        <th class="column-title">Total</th>
+                                        <th class="column-title">Emp.</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="item in itemsAgregadosPedido">
+                                           <td ng-click="ModalItem(item)">
+                                               {{item.item_referencia}}
+                                           </td>
+                                           <td ng-click="ModalItem(item)" ng-repeat="subitem in item.tallas track by $index ">
+                                                <center>
+                                                    {{subitem.cantidad}}
+                                                </center>
+                                           </td>
+                                           <td ng-click="ModalItem(item)">{{item.cantidadtotal}}</td>
+                                           <td ng-click="ModalItem(item)">{{item.empaque}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Total:
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{contadores.cont5}}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                
+                                </table>  
+                            </div>
                             </div>
                             <div class="form-group" >
                                 <div class="row">
@@ -317,12 +426,18 @@
                         </div>
                         <table class="table">
                             <tr>
-                             <td></td>
-                                <td>Color</td>
-                                <td>Cantidad</td>
+                                <td ></td>
+                                <td style="width: 40%">Color</td>
+                                <td style="width: 40%">Cantidad</td>
                             </tr>
                             <tr ng-repeat="extension in ColorMasivo">
-                                <td style="border: 1px solid #b6b6b6;background:{{extension.rgba}};">
+                                <td class="test" style="border: 1px solid #b6b6b6;background:{{extension.rgba}}" 
+                                ng-show="extension.url_imagen=='null'">
+
+                                </td>
+                                <td class="test" style="border: 1px solid #b6b6b6;background-image:url({{coma}}{{url}}{{extension.url_imagen}}{{coma}});" 
+                                ng-show="extension.url_imagen!='null'">
+
                                 </td>
                                 <td>{{extension.extencionDetalle2ID}}</td>
                                 <td>
@@ -396,7 +511,12 @@
                                         <td>Stock</td>
                                     </tr>
                                     <tr ng-repeat="extension in ColoresTalla" style="height:5px">
-                                        <td style="border: 1px solid #b6b6b6;background:{{extension.rgba}};">
+                                        <td class="test" style="border: 1px solid #b6b6b6;background:{{extension.rgba}}" 
+                                ng-show="extension.url_imagen=='null'">
+
+                                </td>
+                                <td class="test" style="border: 1px solid #b6b6b6;background-image:url({{coma}}{{url}}{{extension.url_imagen}}{{coma}});" 
+                                ng-show="extension.url_imagen!='null'">
                                         </td>
                                         <td>{{extension.extencionDetalle2ID}}</td>
                                         <td>{{extension.proceso}}</td>
@@ -431,6 +551,80 @@
             </div>
         </div>
         <div id="extension2" data-toggle="modal" data-target="#extensionDetalle2"></div>
+        <div id="ColoresUnidadSeleccion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">Asignacion Colores</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="testmodal" style="padding: 0px;">
+                            <form id="antoform" class="form-horizontal calender form-label-left" role="form">
+                                <div class="row" style="margin: 0px">
+                                    <div class="form-group col-md-12" style="margin: 1px">
+                                        Item: <strong>{{Item.item_referencia1}}</strong> 
+                                    </div>
+                                   
+                                </div>
+                                <div class="row" style="margin: 0px">
+                                    <div class="form-group col-md-12" style="margin: 1px">
+                                        Talla: <strong>{{InfoItemAdicional.talla}}</strong> 
+                                    </div>
+                                </div>
+                                <div class="row" style="margin: 0px">
+                                    <div class="form-group col-md-12" style="margin: 1px">
+                                        Cantidad: <strong>{{CantidadTotalUnidad}}</strong> 
+                                    </div>
+                                </div>
+                                <table class="table">
+                                    <tr>
+                                        <td></td>
+                                        <td>Color</td>
+                                        <td>Proceso</td>
+                                        <td>Cantidad</td>
+                                        <td>Stock</td>
+                                    </tr>
+                                    <tr ng-repeat="extension in ColoresTalla" style="height:5px">
+                                        <td class="test" style="border: 1px solid #b6b6b6;background:{{extension.rgba}}" 
+                                ng-show="extension.url_imagen=='null'">
+
+                                </td>
+                                <td class="test" style="border: 1px solid #b6b6b6;background-image:url({{coma}}{{url}}{{extension.url_imagen}}{{coma}});" 
+                                ng-show="extension.url_imagen!='null'">
+                                        </td>
+                                        <td>{{extension.extencionDetalle2ID}}</td>
+                                        <td>{{extension.proceso}}</td>
+                                        <td>
+                                             <div class=" input-group" style="max-width:160px"  >
+                                                <span class="input-group-btn"  ng-click="adicionarCantidadColorUnidad(extension.extencionDetalle2ID,'restar',extension.stock,extension.cantidadextension1)">
+                                                    <button type="button" class="btn btn-default">
+                                                        <span class="glyphicon glyphicon-minus">
+                                                        </span>
+                                                    </button>
+                                                </span>
+                                                <input type="number" step="any" ng-model="extension.cantidad" ng-change="onChangeCantidadColorunidad(extension.extencionDetalle2ID,extension.stock,extension.cantidadextension1)" class="form-control text-center" ng-readonly="readonly" min="0" />
+                                                <span class="input-group-btn"  ng-click="adicionarCantidadColorUnidad(extension.extencionDetalle2ID,'sumar',extension.stock,extension.cantidadextension1)">
+                                                    <button type="button" class="btn btn-default">
+                                                        <span class="glyphicon glyphicon-plus">
+                                                        </span>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>{{extension.stock}}</td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-danger antoclose" id="btnCerrarModalCantidadUnidad" ng-click="$scope.onpenModalColoresunidad=false;" style="margin:0px"   data-dismiss="modal">Salir</button>
+                    <button type="button" class="btn btn-success antoclose"  ng-click="agregarColoresTallaUnidad()"  data-dismiss="modal">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ColoresUnidad" data-toggle="modal" data-target="#ColoresUnidadSeleccion"></div>
          <div id="ColoresMasivoModalMedia" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
             <div class="modal-dialog" style="padding-bottom:100px">
                 <div class="modal-content">
@@ -457,9 +651,12 @@
                                         
                                     </tr>
                                     <tr ng-repeat="extension in ColorMasivoMedia">
-                                    <td style="border: 1px solid #b6b6b6;background:{{extension.rgba}};">
-                                            
-                                            
+                                    <td class="test" style="border: 1px solid #b6b6b6;background:{{extension.rgba}}" 
+                                ng-show="extension.url_imagen=='null'">
+
+                                </td>
+                                <td class="test" style="border: 1px solid #b6b6b6;background-image:url({{coma}}{{url}}{{extension.url_imagen}}{{coma}});" 
+                                ng-show="extension.url_imagen!='null'">
                                         </td>
                                         <td>{{extension.extencionDetalle2ID}}</td>
                                         
@@ -507,40 +704,40 @@
                                 <div class="row" style="margin: 0px">
                                     <div class="form-group col-md-12" style="margin: 1px">
                                          <label>
-                                        Item: <strong>{{ItemModal.descripcion}}</strong> 
+                                        Item: <strong>{{ItemModal.linea_descripcion}}</strong> 
                                         </label>
                                     </div>
                                 </div>
                                 <div class="row" style="margin: 0px">
                                     <div class="form-group col-md-4" style="margin: 1px">
                                         <label>
-                                        Referencia: <strong>{{ItemModal.item_referencia1}}</strong> 
+                                        Referencia: <strong>{{ItemModal.item_referencia}}</strong> 
                                         </label>
                                     </div>
                                     <div class="form-group col-md-4" style="margin: 1px">
                                         <label>
-                                        Empaque: <strong>{{ItemModal.empaque.tipo_reg_codigo}}</strong> 
+                                        Empaque: <strong>{{ItemModal.empaque}}</strong> 
                                         </label>
                                     </div>
                                     <div class="form-group col-md-4" style="margin: 1px">
                                         <label>
-                                        Cantidad: <strong>{{ItemModal.cantidadTotal}}</strong> 
+                                        Cantidad: <strong>{{ItemModal.cantidadtotal}}</strong> 
                                         </label>
                                     </div>
                                 </div>
-                                <div ng-repeat="item in ItemModal.Tallas" ng-show="item.cantidad>0">
+                                <div ng-repeat="item in ItemModal.tallas track by $index" ng-show="item.cantidad>0" >
 
                                     <strong> Talla : {{item.talla}}</strong>
                                     <div style="overflow-x:auto;" class="table-resposive" >
                                     <table class="table table-striped responsive-utilities jambo_table bulk_action">
                                         <tr>
-                                            <td ng-repeat="color in item.Colores" ng-show="{{color.cantidad>0}}" style="border: 1px solid #b6b6b6;background:{{color.rgba}};" ></td>
+                                            <td ng-repeat="color in item.colores track by $index" ng-show="{{color.cantidad>0}}" style="border: 1px solid #b6b6b6;background:{{color.rgba}};" ></td>
                                         </tr>
                                         <tr>
-                                            <td ng-repeat="color in item.Colores"  ng-show="{{color.cantidad>0}}">{{color.extencionDetalle2ID}} </td>
+                                            <td ng-repeat="color in item.colores track by $index"  ng-show="{{color.cantidad>0}}">{{color.rowid_erp}} </td>
                                         </tr>
                                         <tr>
-                                            <td ng-repeat="color in item.Colores"  ng-show="{{color.cantidad>0}}">{{color.cantidad}} </td>
+                                            <td ng-repeat="color in item.colores track by $index"  ng-show="{{color.cantidad>0}}">{{color.cantidad}} </td>
                                         </tr>
                                     </table>
                                     </div>
@@ -555,7 +752,6 @@
                 </div>
             </div>
         </div>
-        <div id="ColoresAgregados" data-toggle="modal" data-target="#Modalcolores"></div>
         <div id="ColoresAgregados" data-toggle="modal" data-target="#Modalcolores"></div>
 
         <div id="AlertaSincronizacion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">

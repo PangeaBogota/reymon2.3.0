@@ -232,7 +232,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $scope.rotacionOff();
                         $scope.procesoEnvio=false;
                         CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
-                        CRUD.Updatedynamic("delete from s_planos_pedidos");
+                        CRUD.Updatedynamic("delete from s_planos_pedidos where estado=1");
                         $scope.Proceso.Porcentaje=0;
                         $scope.Proceso.CantidadFaltante=0;
                         $scope.Proceso.CantidadEnviada=0;
@@ -267,7 +267,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                                 setTimeout(function(){
                                     $route.reload();
                                 },1000)
-                                
                             }
                         }
                         return;
@@ -279,12 +278,19 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             $scope.errorAlerta.bandera=1;
                             break;
                         }
+                        debugger
                         $http({
                           method: 'GET',
                           async: true,
                           timeout:14000,
-                          url: SERVIDOR_ENVIO_PEDIDOS+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
-                          
+                          url: SERVIDOR_ENVIO_PEDIDOS,//+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
+                          params:{
+                            usuario:$scope.usuario,
+                            entidad:'PLANO',
+                            codigo_empresa:$scope.codigoempresa,
+                            datos:JSON.stringify(elem[i])
+
+                          }
                             }).then(
                             function success(data) { 
                                 CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
@@ -306,7 +312,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                 })    
             })   
         })
-        
     }
     $scope.build=function(){
         $scope.queryBuild='    select  '+
@@ -1246,7 +1251,8 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].usuariomodificacion+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].fechacreacion+
                             "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].fechamodificacion+
-                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rgba+"' "; 
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].rgba+
+                            "','"+DATOS_ENTIDADES_SINCRONIZACION[i][j].url_imagen+"' "; 
                             if (contador==499) {
                                 CRUD.Updatedynamic(stringSentencia)
                                 NewQuery=true;
