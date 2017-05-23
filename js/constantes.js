@@ -81,19 +81,11 @@ var GRAFICA_DIA_CANTIDAD=[];
 var GRAFICA_MES_LABEL=[];
 var GRAFICA_MES_CANTIDAD=[];
 var TABLA_BALANCE_DATOS=[];
-<<<<<<< HEAD
 var SERVIDOR_ENVIO_PEDIDOS='http://reymonpruebas.pedidosonline.co/Mobile/sync/'
 var SERVIDOR_ENVIO_ACTIVIDADES='http://reymonpruebas.pedidosonline.co/Mobile/SubirDatos?'
 var SERVIDOR_LOGIN='http://reymonpruebas.pedidosonline.co/Mobile/Loginkey?';
 var SERVIDOR_INSTALACION='http://reymonpruebas.pedidosonline.co/Mobile/Instalacion?'
-=======
 //var SERVIDOR_ENVIO_PEDIDOS='http://reymonpruebas.pedidosonline.co/Mobile/sync?'
 //var SERVIDOR_ENVIO_ACTIVIDADES='http://reymonpruebas.pedidosonline.co/Mobile/SubirDatos?'
 //var SERVIDOR_LOGIN='http://reymonpruebas.pedidosonline.co/Mobile/Loginkey?';
 //var SERVIDOR_INSTALACION='http://reymonpruebas.pedidosonline.co/Mobile/Instalacion?'
-
-var SERVIDOR_ENVIO_PEDIDOS='http://reymon.pedidosonline.co/Mobile/sync?'
-var SERVIDOR_ENVIO_ACTIVIDADES='http://reymon.pedidosonline.co/Mobile/SubirDatos?'
-var SERVIDOR_LOGIN='http://reymon.pedidosonline.co/Mobile/Loginkey?';
-var SERVIDOR_INSTALACION='http://reymon.pedidosonline.co/Mobile/Instalacion?'
->>>>>>> origin/master

@@ -206,7 +206,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
                 $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
                 $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
-                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 100",function(elem){
+                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 20",function(elem){
                     $scope.procesoEnvio=true;
                     if ($scope.status.connextionstate==false) {
                         $scope.rotacionOff();
@@ -232,11 +232,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $scope.rotacionOff();
                         $scope.procesoEnvio=false;
                         CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
-<<<<<<< HEAD
-                        CRUD.Updatedynamic("delete from s_planos_pedidos where estado=1");
-=======
                         CRUD.Updatedynamic("delete from s_planos_pedidos where  estado=1 ");
->>>>>>> origin/master
                         $scope.Proceso.Porcentaje=0;
                         $scope.Proceso.CantidadFaltante=0;
                         $scope.Proceso.CantidadEnviada=0;
@@ -282,11 +278,9 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             $scope.errorAlerta.bandera=1;
                             break;
                         }
-                        debugger
                         $http({
                           method: 'GET',
                           async: true,
-<<<<<<< HEAD
                           timeout:14000,
                           url: SERVIDOR_ENVIO_PEDIDOS,//+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
                           params:{
@@ -296,11 +290,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             datos:JSON.stringify(elem[i])
 
                           }
-=======
-                          timeout:10000,
-                          url: SERVIDOR_ENVIO_PEDIDOS+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
-                          
->>>>>>> origin/master
                             }).then(
                             function success(data) { 
                                 CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");

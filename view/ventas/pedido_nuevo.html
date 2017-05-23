@@ -160,7 +160,6 @@
                                                     {{tallas.talla}}
                                                 </div>        
                                             </div>
-                                        
                                         </td>
                                         <td    style="align-content:center;" >
                                             <div >
@@ -323,6 +322,7 @@
                                         </th>
                                         <th class="column-title">Total</th>
                                         <th class="column-title">Emp.</th>
+                                        <th class="column-title">Acc.</th>
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="item in itemsAgregadosPedido">
@@ -336,6 +336,12 @@
                                            </td>
                                            <td ng-click="ModalItem(item)">{{item.cantidadtotal}}</td>
                                            <td ng-click="ModalItem(item)">{{item.empaque}}</td>
+                                           <td>
+                                                <span class="fa fa-pencil btn btn-success" ng-click="editarItem(item,$index)" style="font-size:.7em; width:30px;">
+                                                </span>
+                                                <span class="fa fa-trash-o btn btn-danger" ng-click="EliminarItemPedido(item)" style="font-size:.7em; width:30px;">
+                                                </span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>
@@ -351,6 +357,7 @@
                                             <td></td>
                                             <td>{{contadores.cont5}}</td>
                                             <td></td>
+                                             <td></td>
                                         </tr>
                                     </tbody>
                                 
