@@ -2829,4 +2829,5 @@ app_angular.service('Factory', function ($webSql) {
     
     db.select("alter table erp_item_extencion2_detalle add column url_imagen text ")
     db.select("alter table t_pedidos_detalle add column TipoMedida INTEGER ")
+    db.select("alter table s_planos_pedidos add column TipoMedida INTEGER ")
 });

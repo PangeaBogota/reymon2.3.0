@@ -15,12 +15,22 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 	$scope.detallespedido=[];
 	CRUD.select('select*from t_pedidos',function(elem){
 	})
+	$scope.anularPedido=function(data)
+	{
+		if (confirm("Desea Anular el Pedido")==true) {
+			ProcesadoShow()
+			CRUD.Updatedynamic("update t_pedidos set id_estado=105 where rowid="+data.rowidpedido)
+			ProcesadoHiden();
+			window.location.reload();
+		}		
+	}
 	$scope.cargarLista=function()
 	{
 		$scope.pedidos=[];
-		CRUD.select('select distinct pedidos.sincronizado,pedidos.valor_impuesto,pedidos.fecha_solicitud,pedidos.sincronizado,pedidos.fecha_entrega, pedidos.rowid as rowidpedido,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total,detalle.rowid_pedido,count(detalle.rowid_pedido) cantidaddetalles,sum(detalle.cantidad) as cantidadproductos,pedidos.numpedido_erp,pedidos.estado_erp from  t_pedidos pedidos inner join erp_terceros_sucursales sucursal on sucursal.rowid=pedidos.rowid_cliente_facturacion  inner join erp_terceros terceros on terceros.rowid=sucursal.rowid_tercero  left  join t_pedidos_detalle detalle on detalle.rowid_pedido=pedidos.rowid left join erp_terceros_punto_envio punto_envio on punto_envio.rowid=pedidos.id_punto_envio where pedidos.sincronizado!="EnvioCorrecto" and  pedidos.ambiente="'+$scope.sessiondate.codigo_empresa+'" and  pedidos.usuariocreacion="'+$scope.sessiondate.nombre_usuario+'" group by  pedidos.fecha_solicitud,detalle.rowid_pedido,pedidos.rowid,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total order by pedidos.rowid desc    LIMIT 50',
+		CRUD.select('select  distinct pedidos.sincronizado,pedidos.valor_impuesto,pedidos.fechacreacion,pedidos.sincronizado,pedidos.fecha_entrega, pedidos.rowid as rowidpedido,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total,detalle.rowid_pedido,count(detalle.rowid_pedido) cantidaddetalles,sum(detalle.cantidad) as cantidadproductos,pedidos.numpedido_erp,pedidos.estado_erp from  t_pedidos pedidos inner join erp_terceros_sucursales sucursal on sucursal.rowid=pedidos.rowid_cliente_facturacion  inner join erp_terceros terceros on terceros.rowid=sucursal.rowid_tercero  left  join t_pedidos_detalle detalle on detalle.rowid_pedido=pedidos.rowid left join erp_terceros_punto_envio punto_envio on punto_envio.rowid=pedidos.id_punto_envio where pedidos.id_estado!=105 and pedidos.sincronizado!="EnvioCorrecto" and  pedidos.ambiente="'+$scope.sessiondate.codigo_empresa+'" and  pedidos.usuariocreacion="'+$scope.sessiondate.nombre_usuario+'" group by  pedidos.fecha_solicitud,detalle.rowid_pedido,pedidos.rowid,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total order by pedidos.rowid desc  ',
 			function(elem) {
-				elem.tablamobile=1;$scope.pedidos.push(elem)});
+				elem.tablamobile=1;
+				$scope.pedidos.push(elem)});
 		window.setTimeout(function() {
 			CRUD.select('select distinct pedidos.sincronizado,pedidos.valor_impuesto,pedidos.fecha_solicitud,pedidos.sincronizado,pedidos.fecha_entrega, pedidos.rowid as rowidpedido,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total,detalle.rowid_pedido,count(detalle.rowid_pedido) cantidaddetalles,sum(detalle.cantidad) as cantidadproductos,pedidos.numpedido_erp,pedidos.estado_erp from  t_pedidos_web pedidos inner join erp_terceros_sucursales sucursal on sucursal.rowid=pedidos.rowid_cliente_facturacion  inner join erp_terceros terceros on terceros.rowid=sucursal.rowid_tercero  left  join t_pedidos_detalle_web detalle on detalle.rowid_pedido=pedidos.rowid left join erp_terceros_punto_envio punto_envio on punto_envio.rowid=pedidos.id_punto_envio where pedidos.usuariocreacion="'+$scope.sessiondate.nombre_usuario+'"  group by  pedidos.fecha_solicitud,detalle.rowid_pedido,pedidos.rowid,terceros.razonsocial,sucursal.nombre_sucursal,punto_envio.nombre_punto_envio,pedidos.valor_total order by pedidos.rowid desc    LIMIT 50',
 			function(elem) {elem.tablamobile=0;$scope.pedidos.push(elem)});
@@ -83,7 +93,16 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		$('#closeconfirmacion').click();
 		$scope.build();	
 	}
-
+	function randomString() {
+		var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+		var string_length = 8;
+		var randomstring = '';
+		for (var i=0; i<string_length; i++) {
+			var rnum = Math.floor(Math.random() * chars.length);
+			randomstring += chars.substring(rnum,rnum+1);
+		}
+		return randomstring;
+	}
 	$scope.FechaEntregaP();
 	$scope.onChangeFechaEntrega=function()
 	{
@@ -170,10 +189,10 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 			elem.cantidadtotal=0;
 			$scope.detallespedido.unshift(elem);
 			$scope.contadores.cont1++;
-			var query2="select count(*) as c   from "+$scope.tabla2+" where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' ";
-			CRUD.select(query2,function(contadorItems){
-				var query3="select "+contadorItems.c+" as contador ,rowid_item_ext, item_ext1 as talla,cantidad,rowid_item from "+$scope.tabla2+" where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' order by rowid_item_ext asc"
-				CRUD.select(query3,function(tallas){
+			var query2="select  item_ext1 as c  from "+$scope.tabla2+" where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' group by item_ext1 ";
+			CRUD.selectAllinOne(query2,function(contadorItems){
+				var query3="select "+contadorItems.length+" as contador ,rowid_item_ext, item_ext1 as talla,sum(cantidad) as cantidad,rowid_item from "+$scope.tabla2+" where rowid_item='"+elem.rowid_item+"'  and  rowid_pedido='"+elem.rowid_pedido+"' group by rowid_item_ext, item_ext1,rowid_item order by rowid_item_ext asc"
+				/*CRUD.select(query3,function(tallas){
 					$scope.contadores.cont4++;
 					$scope.indicePush=true;
 					$scope.indicemenor=true;
@@ -206,14 +225,48 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 									if ($scope.detallespedido[i].tallas.length+1==9) {
 										$scope.contadores.cont4=0;
 									}
-									
 								}
-								
 							}
-							
-							
 						}
-						
+					}
+				})*/
+				CRUD.select(query3,function(tallas){
+					debugger
+					$scope.contadores.cont4++;
+					$scope.indicePush=true;
+					$scope.indicemenor=true;
+					for (var i =0;i<$scope.detallespedido.length;i++) {
+						var a=$scope.detallespedido[i].rowid_item;
+						if (a==tallas.rowid_item) {
+							$scope.generico=[];
+							$scope.generico.contador=0;
+							$scope.generico.talla=0;
+							$scope.generico.cantidad=0;
+							$scope.generico.rowid_item=0;
+							for (var f=1;f<9;f++) {
+								$scope.generico.rowid_item_ext=f;
+								if (f<tallas.rowid_item_ext && $scope.detallespedido[i].tallas.length+1!=tallas.rowid_item_ext && $scope.indicemenor) {
+									$scope.detallespedido[i].tallas.push($scope.generico)
+								}
+								else if ( ($scope.indicePush && f==tallas.rowid_item_ext) || ($scope.detallespedido[i].tallas.length+1==tallas.rowid_item_ext  && $scope.indicePush))
+								{
+									$scope.detallespedido[i].tallas.push(tallas)
+									$scope.detallespedido[i].cantidadtotal+=tallas.cantidad;
+									$scope.contadores.cont5+=tallas.cantidad;
+									$scope.indicemenor=false;
+									$scope.indicePush=false;
+								}
+								else if ($scope.contadores.cont4>=tallas.contador) {
+									
+									if ($scope.detallespedido[i].tallas.length<8) {
+										$scope.detallespedido[i].tallas.push($scope.generico)
+									}
+									if ($scope.detallespedido[i].tallas.length+1==9) {
+										$scope.contadores.cont4=0;
+									}
+								}
+							}
+						}
 					}
 				})
 			})
@@ -275,6 +328,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		}
 		$('.confirmarEnvio').attr('disabled','disabled');
 		ProcesadoShow();   
+
 		$scope.queryBuild='    select  '+
 		   ' t.key_user,'+
 		   ' t.rowid_empresa,'+
@@ -318,6 +372,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 			'tpd.rowid_bodega as d_rowid_bodega,'+
 			'tpd.precio_unitario as d_precio_unitario,'+
 			'tpd.valor_descuento as d_valor_descuento,'+
+			'tpd.tipomedida as tipomedida,'+
 			'tpdd.rowid as s_rowid,'+
 			'tpdd.pedidodetalle as s_rowid_detalle,'+
 			'tpdd.cantidad as s_cantidad,'+
@@ -332,13 +387,13 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 
 		$scope.queryBuild=$scope.queryBuild.replace('__REQUIRED',$scope.pedidoSeleccionado.rowid_pedido)
 		CRUD.selectAllinOne($scope.queryBuild,function(ped){
-			debugger
 				var rowidPedido=0;
 				var contador=0;
 				var  stringSentencia='';
 				var NewQuery=true;
 				var ultimoregistro=ped.length-1;
 				var step=0;
+				//$scope.xml_code=randomString()+ped.length;
 				for (var i =0;i<ped.length;i++) {
 					contador++
 					if (ultimoregistro==i) {
@@ -396,12 +451,12 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					"','"+ped[i].d_rowid_item_ext+
 					"','"+ped[i].d_empaque+
 					"','"+ped[i].d_observaciones+
-					"','"+ped[i].d_rowid_bodega+
+					"','"+"3004"+
 					"','"+ped[i].s_rowid+
 					"','"+ped[i].s_rowid_detalle+
 					"','"+ped[i].s_cantidad+
 					"','"+ped[i].s_itemextencion2detalle+
-					"',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"','"+ped[i].rowid_sku+"' "; 
+					"',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"','"+ped[i].rowid_sku+"','"+ped[i].tipomedida+"' "; 
 					if (contador==499) {
 						CRUD.Updatedynamic(stringSentencia)
 						NewQuery=true;
