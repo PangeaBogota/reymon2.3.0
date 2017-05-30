@@ -40,136 +40,6 @@ app_angular.config(['$routeProvider',//'$locationProvider',
 
 //CONTROLADOR DE GENERAL
 app_angular.controller('sessionController',['bootbox','Conexion','$scope','$location','$http','$route', '$routeParams', 'Factory' ,function (bootbox,Conexion, $scope, $location, $http,$route, $routeParams, Factory) {
-    $scope.EnvioAutomatico=function(tipo){
-        tipo="AUTOMATICA";
-        $scope.usuario=$scope.sessiondate.nombre_usuario;
-        $scope.codigoempresa=$scope.sessiondate.codigo_empresa;
-        if ($scope.procesoEnvio==true) {
-            return
-        }
-        $scope.procesoEnvio=true;
-        CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0",function(faltante){
-            if (faltante.length==0) 
-            {
-                $scope.Proceso.CantidadFaltante=0;
-            }
-            else
-            {
-                $scope.Proceso.CantidadFaltante=faltante[0].cantidad;    
-            }
-            CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
-                $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
-                $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
-                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro",function(elem){
-                    $scope.procesoEnvio=true;
-                    if ($scope.status.connextionstate==false) {
-                        $scope.rotacionOff();
-                        $scope.procesoEnvio=false;
-                        Mensajes('Revisar Conexion Internet','warning',''); 
-                        return;
-                    }
-                    $scope.rotacionOff();
-                    $scope.rotacionOn();
-                    if (elem.length>0) 
-                    {
-                        localStorage.removeItem('NUEVA_SINCRONIZACION');
-                        localStorage.setItem('NUEVA_SINCRONIZACION',1); 
-                    }
-                    if (elem.length==0) {
-                        $scope.nueva_sincronizacion=window.localStorage.getItem("NUEVA_SINCRONIZACION");
-                        if ($scope.nueva_sincronizacion==null || $scope.sincronizacion==undefined || $scope.sincronizacion==NaN) {
-                            $scope.nueva_sincronizacion=1;
-                        }
-                        $scope.rotacionOff();
-                        $scope.procesoEnvio=false;
-                        CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
-                        CRUD.Updatedynamic("delete from s_planos_pedidos where  estado=1 ");
-                        $scope.Proceso.Porcentaje=0;
-                        $scope.Proceso.CantidadFaltante=0;
-                        $scope.Proceso.CantidadEnviada=0;
-                        var URLactual = window.location;
-                        $scope.Proceso=[];
-                        $scope.Proceso.Porcentaje=0;
-                        $scope.Proceso.CantidadFaltante=0;
-                        $scope.Proceso.CantidadEnviada=0;
-                        $scope.Proceso.Total=0;
-                        $('#progreso').hide();
-                        $scope.roundProgressData = {
-                          label: 0,
-                          percentage: 0
-                        }
-                        if ($scope.nueva_sincronizacion=="1" && tipo=="AUTOMATICA") 
-                        {
-                            localStorage.removeItem('NUEVA_SINCRONIZACION');
-                            localStorage.setItem('NUEVA_SINCRONIZACION',0); 
-                            if (URLactual.hash.includes('ingresados')) {
-                                setTimeout(function(){
-                                    $route.reload();
-                                },1000)
-                            }
-                        }
-                        return;
-                    }
-                    $scope.CalculoPorcentaje();
-                    $scope.EnvioRegistro=elem;
-                    //$scope.EnvioPedidos(elem);
-                    $scope.ContadorEnvios=0;
-                    $scope.executeAjax();
-                })    
-            })   
-        })
-    }
-    $scope.executeAjax=function()
-    {
-        var i=$scope.ContadorEnvios;
-        var rowid=$scope.EnvioRegistro[i].rowid
-        if ($scope.status.connextionstate==false) {
-            $scope.errorAlerta.bandera=1;
-            return;
-        }
-        $http({
-              method: 'GET',
-              async: true,
-              url: SERVIDOR_ENVIO_PEDIDOS,//+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
-              params:{
-                usuario:$scope.usuario,
-                entidad:'PLANO',
-                codigo_empresa:$scope.codigoempresa,
-                datos:JSON.stringify($scope.EnvioRegistro[i])
-
-              }
-                }).then(
-                function success(data) { 
-                    CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
-                    $scope.Proceso.CantidadEnviada+=1;
-                    $scope.CalculoPorcentaje();
-                    if ($scope.ContadorEnvios!=$scope.EnvioRegistro.length-1) 
-                    {
-                        $scope.ContadorEnvios++;
-                        $scope.executeAjax();
-                    }
-                    else
-                    {
-                        $scope.consoleLog();
-                        $scope.procesoEnvio=false;
-                    }
-                    
-                }, 
-                function error(err) {
-                    $scope.errorAlerta.bandera=1;
-                    if ($scope.ContadorEnvios!=$scope.EnvioRegistro.length-1) 
-                    {
-                        $scope.ContadorEnvios++;
-                        $scope.executeAjax();
-                    }
-                    else
-                    {
-                        $scope.consoleLog();
-                        $scope.procesoEnvio=false;
-                    }
-            });
-    }
-
     var meses = new Array ("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
     var diasSemana = new Array("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado");
     $scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
@@ -313,8 +183,8 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             $scope.sincronizacion='AUTOMATICA';
         }
         if ($scope.sincronizacion=='AUTOMATICA') {
-            //$scope.envioDataWeb('AUTOMATICA');    
-            $scope.EnvioAutomatico();
+            $scope.envioDataWeb('AUTOMATICA');    
+            //$scope.envioDataWeb();
         }
     }, 15000);
     $scope.envioDataWeb=function(tipo){
@@ -337,7 +207,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
                 $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
                 $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
-                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 20",function(elem){
+                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 25",function(elem){
                     $scope.procesoEnvio=true;
                     if ($scope.status.connextionstate==false) {
                         $scope.rotacionOff();
@@ -398,16 +268,43 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                                 setTimeout(function(){
                                     $route.reload();
                                 },1000)
+                                
                             }
                         }
                         return;
                     }
                     $scope.CalculoPorcentaje();
-                    $scope.EnvioRegistro=elem;
-                    //$scope.EnvioPedidos(elem);
-                    $scope.ContadorEnvios=0;
-                    $scope.executeAjax();
-                   
+                    for (var i =0;i<elem.length;i++) {
+                        var rowid=elem[i].rowid
+                        if ($scope.status.connextionstate==false) {
+                            $scope.errorAlerta.bandera=1;
+                            break;
+                        }
+                        debugger
+                        $http({
+                          method: 'GET',
+                          async: true,
+                          timeout:13000,
+                          url: SERVIDOR_ENVIO_PEDIDOS,//+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
+                          params:{
+                            usuario:$scope.usuario,
+                            entidad:'PLANO',
+                            codigo_empresa:$scope.codigoempresa,
+                            datos:JSON.stringify(elem[i])
+
+                          }
+                          
+                            }).then(
+                            function success(data) { 
+                                CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
+                                $scope.Proceso.CantidadEnviada+=1;
+                                $scope.CalculoPorcentaje();
+                            }, 
+                            function error(err) {
+                                $scope.errorAlerta.bandera=1;
+                                return ;
+                        });
+                    }
                     setTimeout(function(){
                         $scope.procesoEnvio=false;
                         if (tipo!='AUTOMATICA') {
@@ -418,6 +315,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                 })    
             })   
         })
+        
     }
     $scope.consoleLog=function()
     {
@@ -466,6 +364,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             'tpd.factor as d_factor,'+
             'tpd.cantidad_base as d_cantidad_base,'+
            'tpd.stock as d_stock,'+
+           'tpd.tipomedida as tipomedida,'+
             'tpd.porcen_descuento as d_porcen_descuento,'+
             'tpd.valor_base as d_valor_base,'+
             'tpd.valor_impuesto as d_valor_impuesto,'+
@@ -481,6 +380,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             'tpdd.pedidodetalle as s_rowid_detalle,'+
             'tpdd.cantidad as s_cantidad,'+
             'tpdd.itemExtension2Detalle as s_itemextencion2detalle '+
+            'tpdd.rowid_sku as rowid_sku '+
             ' from t_pedidos t'+
             ' inner  join  t_pedidos_detalle tpd '+
             ' on tpd.rowid_pedido=t.rowid'+
@@ -557,7 +457,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                     "','"+ped[i].s_rowid_detalle+
                     "','"+ped[i].s_cantidad+
                     "','"+ped[i].s_itemextencion2detalle+
-                    "',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"' "; 
+                    "',0,"+step+",0,0,'"+ped[i].d_precio_unitario+"','"+ped[i].d_valor_descuento+"','"+ped.length+"','"+ped.rowid_sku+"','"+ped[i].tipomedida+"' "; 
                     if (contador==499) {
                         CRUD.Updatedynamic(stringSentencia)
                         NewQuery=true;

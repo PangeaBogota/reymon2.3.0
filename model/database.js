@@ -322,6 +322,10 @@ app_angular.service('Factory', function ($webSql) {
         "rowid_sku": {
             "type": "INTEGER",
             "null": "NULL"
+        },
+        "TipoMedida": {
+            "type": "INTEGER",
+            "null": "NULL"
         }
 
 
@@ -1615,6 +1619,11 @@ app_angular.service('Factory', function ($webSql) {
             "type": "integer",
             "null": "NULL"
         }
+        ,
+        "TipoMedida": {
+            "type": "integer",
+            "null": "NULL"
+        }
         
     });
 
@@ -2676,9 +2685,12 @@ app_angular.service('Factory', function ($webSql) {
             "type": "text",
             "null": "NULL"
         }
+        ,
+        "url_imagen": {
+            "type": "text",
+            "null": "NULL"
+        }
     })
-
-
     db.createTable('erp_items_extenciones',{
         "rowid": {
             "type": "text",
@@ -2827,7 +2839,6 @@ app_angular.service('Factory', function ($webSql) {
         " usu.nombre_usuario=act.usuario_creacion " +
         "" )
     
-    db.select("alter table erp_item_extencion2_detalle add column url_imagen text ")
-    db.select("alter table t_pedidos_detalle add column TipoMedida INTEGER ")
-    db.select("alter table s_planos_pedidos add column TipoMedida INTEGER ")
+    
+    
 });
